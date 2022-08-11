@@ -2,6 +2,52 @@
 
 	//include header file
 	include ('include/header.php');
+	if(isset($_POST['signin']))
+	{
+		include './include/connect.php';
+	
+		$gemail = $_POST['email'];
+		$password = $_POST['password'];
+		if (empty($gemail) || empty($password)){
+			header("Location: signin.php?error=fields_are_empty");
+			exit();
+		}
+
+	else{
+		$query = "SELECT * FROM `register` WHERE email =?";
+		$stmt = mysqli_stmt_init($conn);
+		if(!mysqli_stmt_prepare($stmt, $query)) {
+				header("Location: signin.php?error=prepared statement error");
+				exit();
+			}
+		else {
+				mysqli_stmt_bind_param($stmt, "s", $gemail);
+				mysqli_stmt_execute($stmt);
+				$result = mysqli_stmt_get_result($stmt);
+				if ($row = mysqli_fetch_assoc($result)) {
+					$validatepassword = password_verify($password, $row['password']);
+
+					if ($validatepassword == false ){
+						header("Location: signin.php?error=password_incorrect");
+						exit();
+					}
+					else {
+						session_start();
+						
+						$_SESSION['gemail'] = $row['email'];
+						
+						header("Location: index.php?action=login successfully");
+						exit();
+					}
+				}
+
+		}
+
+	}
+
+}
+
+
 
 ?>
 
@@ -23,6 +69,7 @@
 	}
 	.red-bar{
 		width: 25%;
+		align-items: center;
 	}
 	.form-container{
 		background-color: white;
@@ -37,7 +84,7 @@
  <div class="container-fluid red-background size">
 	<div class="row">
 		<div class="col-md-6 offset-md-3">
-			<h1 class="text-center">Login</h1>
+			<h1 class="text-center">SignIn</h1>
 			<hr class="white-bar">
 		</div>
 	</div>
@@ -47,23 +94,28 @@
 		<div class="col-md-6 offset-md-3 form-container">
 		<h3>SignIn</h3>
 		<hr class="red-bar">
+		<form action="" method="post" >
 		
-		<!-- Erorr Messages -->
-
-			<form action="" method="post" >
 				<div class="form-group">
-					<label for="email">Email/Phone no.</label>
-					<input type="text" name="email_phone" class="form-control" placeholder="Email Or Phone" required>
+					<label for="email">Email</label>
+					<input type="text" name="email" class="form-control" placeholder="Email" required>
 				</div>
 				<div class="form-group">
 					<label for="password">Password</label>
 					<input type="password" name="password" placeholder="Password" required class="form-control">
 				</div>
 				<div class="form-group">
-					<button class="btn btn-danger btn-lg center-aligned" type="submit" name="SignIn">SignIn</button>
+					<button class="btn btn-danger btn-lg center-aligned" type="submit" name="signin">SignIn</button>
 				</div>
+				<div class="signup">Don't have an account?
+                    <a href="signin.php">Sign up</a></div>
+               
+            </div>
 			</form>
 		</div>
 	</div>
 </div>
-<?php include 'include/footer.php' ?>
+
+<?php
+ include 'include/footer.php'
+  ?>

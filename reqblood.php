@@ -77,7 +77,7 @@
 								<label for="city">City</label>
 								
 									<option value="">choose </option>
-									<optgroup title="Ktm" label="&raquo; Kathmandu"></optgroup>
+									<optgroup title="Ktm" label="&raquo; KAthmandu"></optgroup>
 									<option value="Balaju" >Balaju</option>
 									<option value="Banasthali" >Banasthali</option>
 									<option value="Kritipur" >Kritipur</option>

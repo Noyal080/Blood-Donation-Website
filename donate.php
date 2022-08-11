@@ -1,6 +1,74 @@
 <?php 
   //include header file
   include ('include/header.php');
+  if(isset($_POST['submit']))
+  {
+	include_once ('./include/connect.php');
+	$name = $_POST['name'];
+	$email= $_POST['email'];
+	$phone= $_POST['phone'];
+	$gender= $_POST['gender'];
+	$city= $_POST['city'];
+	$blood_group= $_POST['blood_group'];
+	$password= $_POST['password'];
+	$c_password = $_POST['c_password'];
+	$date= $_POST['dob'];
+
+
+	if((!filter_var($email, FILTER_VALIDATE_EMAIL)) && (preg_match("/^[a-zA-Z0-9]*$/", $email)))
+	{
+		header("Location: donate.php? error=email_is_not_valid");
+		exit();
+	}
+	elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)){
+        header("Location: ../register.php?error=email is not valid");
+        exit();
+    }
+	elseif($password != $c_password)
+	{
+		header("Location: donater.php?error=password doesnt match");
+        exit();
+	}
+	else
+	{
+		$query = "SELECT email FROM register WHERE email =?";
+        $stmt = mysqli_stmt_init($conn);
+        if(!mysqli_stmt_prepare($stmt, $query)) {
+            header("Location: donate.php?error=prepared statement error");
+            exit();
+        }
+        else {
+            mysqli_stmt_bind_param($stmt, "s", $name);
+            mysqli_stmt_execute($stmt);
+            mysqli_stmt_store_result($stmt); // if you need to access the information of data from data base
+            $checkresult = mysqli_stmt_num_rows($stmt);
+
+            if ($checkresult > 0) {
+                header("Location: donate.php?error=user already registered");
+                exit();
+            }
+            else{
+
+                $query = "INSERT INTO register (name, email, phone, gender , city, blood_group, password, dob) VALUES (?, ?, '$phone' ,'$gender', '$city', '$blood_group',?,'$date')";
+                $stmt = mysqli_stmt_init($conn);
+                if (!mysqli_stmt_prepare($stmt, $query)) {
+                    header("Location: donate.php?errror=prepared statement error 2");
+                    exit();
+                }
+                else{
+                    $encpassword = password_hash($password, PASSWORD_DEFAULT);
+                    mysqli_stmt_bind_param($stmt, "sss", $name, $email, $encpassword);
+                    mysqli_stmt_execute($stmt);
+                    // mysqli_stmt_store_result($stmt); // not necessary
+                    header("Location: signin.php?action=registration completed successfully");
+                    exit();
+				}
+	}
+}
+		}
+
+  }
+
 ?>
 
 <style>
@@ -31,6 +99,12 @@
 	}
 </style>
 
+<div class="alert alert-success alert-dismissible fade show" role="alert">
+  <strong>         Only donate blood once in 3 month. Take rest</strong>
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+    <span aria-hidden="true">&times;</span>
+  </button>
+</div>
 
 <div class="container-fluid red-background size">
 	<div class="row">
@@ -40,16 +114,10 @@
 		</div>
 	</div>
 </div>
-<div class="alert alert-success alert-dismissible fade show" role="alert">
-  <strong>         Only donate blood once in 3 month. Take rest</strong>
-  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-    <span aria-hidden="true">&times;</span>
-  </button>
-</div>
 <div class="container size">
 	<div class="row">
 		<div class="col-md-6 offset-md-3 form-container">
-					<h3>Sign Up</h3>
+					<h3>SignUp</h3>
 					<hr class="red-bar">
 					
           <!-- Error Messages -->
@@ -75,23 +143,13 @@
             </div><!--End form-group-->
 					<div class="form-group">
 				              <label for="gender">Gender</label><br>
-				              		Male<input type="radio" name="gender" id="gender" value="Male" style="margin-left:10px; margin-right:10px;" checked>
-				              		Fe-male<input type="radio" name="gender" id="gender" value="Fe-male" style="margin-left:10px;">
+				              		Male<input type="radio" name="gender" id="male" value="Male" style="margin-left:10px; margin-right:10px;" checked>
+				              		Female<input type="radio" name="gender" id="female" value="Female" style="margin-left:10px;">
 				    </div><!--gender-->
 				    <div class="form-inline">
-              <label for="name">Date of Birth</label><br>
-              <select class="form-control demo-default" id="date" name="date" style="margin-bottom:10px;" required>
-                <option value="">---Date---</option>
-                <option value="01" >01</option><option value="02" >02</option><option value="03" >03</option><option value="04" >04</option><option value="05" >05</option><option value="06" >06</option><option value="07" >07</option> <option value="08" >08</option><option value="09" >09</option><option value="10" >10</option><option value="11" >11</option><option value="12" >12</option><option value="13" >13</option><option value="14" >14</option><option value="15" >15</option><option value="16" >16</option><option value="17" >17</option><option value="18" >18</option><option value="19" >19</option><option value="20" >20</option><option value="21" >21</option><option value="22" >22</option><option value="23" >23</option><option value="24" >24</option><option value="25" >25</option><option value="26" >26</option><option value="27" >27</option><option value="28" >28</option><option value="29" >29</option><option value="30" >30</option><option value="31" >31</option>
-              </select>
-              <select class="form-control demo-default" name="month" id="month" style="margin-bottom:10px;" required>
-                <option value="">---Month---</option>
-                <option value="01" >January</option><option value="02" >February</option><option value="03" >March</option><option value="04" >April</option><option value="05" >May</option><option value="06" >June</option><option value="07" >July</option><option value="08" >August</option><option value="09" >September</option><option value="10" >October</option><option value="11" >November</option><option value="12" >December</option>
-              </select>
-              <select class="form-control demo-default" id="year" name="year" style="margin-bottom:10px;" required>
-                <option value="">---Year---</option>
-                <option value="1957" >1957</option><option value="1958" >1958</option><option value="1959" >1959</option><option value="1960" >1960</option><option value="1961" >1961</option><option value="1962" >1962</option><option value="1963" >1963</option><option value="1964" >1964</option><option value="1965" >1965</option><option value="1966" >1966</option><option value="1967" >1967</option><option value="1968" >1968</option><option value="1969" >1969</option><option value="1970" >1970</option><option value="1971" >1971</option><option value="1972" >1972</option><option value="1973" >1973</option><option value="1974" >1974</option><option value="1975" >1975</option><option value="1976" >1976</option><option value="1977" >1977</option><option value="1978" >1978</option><option value="1979" >1979</option><option value="1980" >1980</option><option value="1981" >1981</option><option value="1982" >1982</option><option value="1983" >1983</option><option value="1984" >1984</option><option value="1985" >1985</option><option value="1986" >1986</option><option value="1987" >1987</option><option value="1988" >1988</option><option value="1989" >1989</option><option value="1990" >1990</option><option value="1991" >1991</option><option value="1992" >1992</option><option value="1993" >1993</option><option value="1994" >1994</option><option value="1995" >1995</option><option value="1996" >1996</option><option value="1997" >1997</option><option value="1998" >1998</option><option value="1999" >1999</option>
-              </select>
+					<label for="date" style="display: block ;" >Date of Birth</label>
+
+			<input type="date" id="start" name="dob" placeholder="YYYY-MM-DD">
             </div><!--End form-group-->
 				    <div class="form-group">
 						<label for="fullname">Email</label>
@@ -99,7 +157,7 @@
 					</div>
 					<div class="form-group">
               <label for="contact_no">Contact No</label>
-              <input type="text" name="contact_no" value="" placeholder="03********" class="form-control" required pattern="^\d{11}$" title="11 numeric characters only" maxlength="11">
+              <input type="text" name="phone" value="" placeholder="+977" class="form-control" required pattern="^\d{10}$" title="10 numeric characters only" maxlength="10">
             </div><!--End form-group-->
 					<div class="form-group">
               <label for="city">City</label>
@@ -126,18 +184,15 @@
 
             <div class="form-inline">
               <input type="checkbox" name="term" value="true" required style="margin-left:10px;">
-              <span style="margin-left:10px;"><b>i agree all above condition</b></span>
+              <span style="margin-left:10px;"><b>I agree all above condition</b></span>
             </div><!--End form-group-->
 			
 					<div class="form-group">
 						<button id="submit" name="submit" type="submit" class="btn btn-lg btn-danger center-aligned" style="margin-top: 20px;">SignUp</button>
 					</div>
+					<div class="signin">Already have an account?
+                    <a href="signin.php">Sign in</a></div>
 				</form>
 		</div>
 	</div>
 </div>
-
-<?php 
-  //include footer file
-  include ('include/footer.php');
-?>
